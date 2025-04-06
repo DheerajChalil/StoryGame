@@ -1,0 +1,15 @@
+version: "3.9"
+
+services:
+  fastapi-app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: fastapi-flux
+    ports:
+      - "8000:8000"
+#    volumes:
+#      - /home/flux1schnell:/model  # Mount your model directory into the container
+    environment:
+      - PYTHONUNBUFFERED=1
+    restart: unless-stopped
