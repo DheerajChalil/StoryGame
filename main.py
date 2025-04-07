@@ -4,6 +4,7 @@ from diffusers import FluxPipeline
 import torch
 import io
 import base64
+from diffusers import DiffusionPipeline
 
 app = FastAPI()
 
@@ -11,12 +12,7 @@ app = FastAPI()
 @app.on_event("startup")
 def load_model():
     global pipe
-    pipe = FluxPipeline.from_pretrained(
-        "/home/dheeraj/flux1schnell",
-        torch_dtype=torch.bfloat16
-    )
-    # pipe.enable_model_cpu_offload() #save some VRAM by offloading the model to CPU. Remove this if you have enough GPU power
-    pipe.enable_sequential_cpu_offload() # offloads modules to CPU on a submodule level (rather than model level)
+    pipe = DiffusionPipeline.from_pretrained("black-forest-labs/FLUX.1-dev")
 
 class PromptRequest(BaseModel):
     prompt: str
@@ -27,14 +23,7 @@ class ImageResponse(BaseModel):
 @app.post("/generate/")
 def generate_image(req: PromptRequest):
     try:
-        image = pipe(
-            req.prompt,
-            guidance_scale=0.0,
-            output_type="pil",
-            num_inference_steps=4,
-            max_sequence_length=256,
-            generator=torch.Generator("cpu").manual_seed(0)
-        ).images[0]
+        image = pipe(req.prompt).images[0]
 
         # Convert image to base64 string for API response
         buffered = io.BytesIO()
